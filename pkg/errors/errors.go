@@ -3,18 +3,17 @@ package errors
 import "fmt"
 
 type AppError struct {
-    Message string
-    Err     error
+	Message string
+	Err     error
 }
 
 func (e AppError) Error() string {
-    return fmt.Sprintf("%s: %v", e.Message, e.Err)
+	return fmt.Sprintf("%s: %v", e.Message, e.Err)
 }
 
 func Wrap(err error, message string) AppError {
-    return AppError{
-        Message: message,
-        Err:     err,
-    }
+	return AppError{
+		Message: message,
+		Err:     err,
+	}
 }
-

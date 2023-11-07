@@ -1,22 +1,21 @@
 package service
 
 import (
-    "github.com/stevend2002/tgp-bp/internal/repository"
+	"github.com/stevend2002/tgp-bp/internal/repository"
 )
 
 type UserService interface {
-    CreateUser(name string, email string) error
+	CreateUser(name string, email string) error
 }
 
 type userService struct {
-    userRepository repository.UserRepository
+	userRepository repository.UserRepository
 }
 
 func NewUserService(userRepository repository.UserRepository) UserService {
-    return &userService{userRepository}
+	return &userService{userRepository}
 }
 
 func (us *userService) CreateUser(name string, email string) error {
-    return us.userRepository.CreateUser(name, email)
+	return us.userRepository.CreateUser(name, email)
 }
-
