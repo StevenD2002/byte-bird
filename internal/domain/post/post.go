@@ -14,4 +14,3 @@ type Post struct {
 	Timestamp time.Time
 	// Add other relevant fields
 }
-

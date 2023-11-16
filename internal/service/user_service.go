@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/stevend2002/tgp-bp/internal/repository"
+	"byte-bird/internal/repository"
 )
 
 type UserService interface {

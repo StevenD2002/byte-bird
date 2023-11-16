@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/stevend2002/tgp-bp/internal/service"
+	"byte-bird/internal/service"
 )
 
 type HTTPServer struct {

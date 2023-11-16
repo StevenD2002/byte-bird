@@ -3,8 +3,8 @@ package repository
 import (
 	"database/sql"
 
-	// "github.com/stevend2002/tgp-bp/internal/db"
-	"github.com/stevend2002/tgp-bp/pkg/errors"
+	// "byte-bird/internal/db"
+	"byte-bird/pkg/errors"
 )
 
 type UserRepository interface {
@@ -26,3 +26,14 @@ func (ur *userRepository) CreateUser(name string, email string) error {
 	}
 	return nil
 }
+
+func (ur *userRepository) GetUser(id int) (string, string, error) {
+  var name, email string
+  err := ur.db.QueryRow("SELECT name, email FROM users WHERE id = $1", id).Scan(&name, &email)
+  if err != nil {
+    return "", "", errors.Wrap(err, "failed to get user")
+  }
+  return name, email, nil
+}
+
+

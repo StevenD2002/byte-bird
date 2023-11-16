@@ -7,12 +7,12 @@ import (
 	// "net/http"
 
 	_ "github.com/lib/pq"
-	"github.com/stevend2002/tgp-bp/internal/db"
-	"github.com/stevend2002/tgp-bp/internal/repository"
-	"github.com/stevend2002/tgp-bp/internal/service"
+	"byte-bird/internal/db"
+	"byte-bird/internal/repository"
+	"byte-bird/internal/service"
 
-	// "github.com/stevend2002/tgp-bp/pkg/errors"
-	"github.com/stevend2002/tgp-bp/pkg/httpserver"
+	// "byte-bird/pkg/errors"
+	"byte-bird/pkg/httpserver"
 )
 
 const (
