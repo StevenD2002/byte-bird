@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	dbConnectionString = "host=localhost port=5432 dbname=postgres user=myuser sslmode=disable"
+	dbConnectionString = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
 )
 
 func main() {
