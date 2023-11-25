@@ -17,7 +17,6 @@ import (
 
 const (
 	dbConnectionString    = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
-	redisConnectionString = "localhost:6379"
 )
 
 func main() {
@@ -30,10 +29,8 @@ func main() {
 	userRepository := repository.NewUserRepository(db.DB)
 	userService := service.NewUserService(userRepository)
 
-	redisPostRepository := repository.NewRedisPostRepository(redisConnectionString)
-	postService := service.NewPostServiceImpl(redisPostRepository)
 
-	httpServer := httpserver.NewHTTPServer(userService, postService)
+	httpServer := httpserver.NewHTTPServer(userService)
 	httpServer.StartServer()
 }
 

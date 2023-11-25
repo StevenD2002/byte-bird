@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(name string, email string) error
+	CreateUser(name string, email string, hashedPassword string) error
 }
 
 type userRepository struct {
@@ -19,8 +19,8 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepository{db}
 }
 
-func (ur *userRepository) CreateUser(name string, email string) error {
-	_, err := ur.db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", name, email)
+func (ur *userRepository) CreateUser(name string, email string, hashedPassword string) error {
+	_, err := ur.db.Exec("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)", name, email, hashedPassword)
 	if err != nil {
 		return errors.Wrap(err, "failed to create user")
 	}
