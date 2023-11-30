@@ -3,6 +3,7 @@
 package repository
 
 import (
+  "database/sql"
 	"context"
 	"byte-bird/internal/domain/post"
 )
@@ -13,5 +14,13 @@ type PostRepository interface {
 	GetPostByID(ctx context.Context, postID string) (*post.Post, error)
 	CreatePost(ctx context.Context, newPost *post.Post) error
 	// Add other relevant methods
+}
+
+type postRepository struct {
+  db *sql.DB
+}
+
+func NewPostRepository(db *sql.DB) PostRepository {
+  return nil
 }
 
