@@ -15,7 +15,6 @@ type PostRepository interface {
 	CreatePost(ctx context.Context, newPost *post.Post) error
 	// Add other relevant methods
 }
-
 type postRepository struct {
   db *sql.DB
 }
