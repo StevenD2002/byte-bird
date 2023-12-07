@@ -29,8 +29,11 @@ func main() {
 	userRepository := repository.NewUserRepository(db.DB)
 	userService := service.NewUserService(userRepository)
 
+  postRepository := repository.NewPostRepository(db.DB)
+  postService := service.NewPostService(postRepository)
 
-	httpServer := httpserver.NewHTTPServer(userService)
+
+	httpServer := httpserver.NewHTTPServer(userService, postService)
 	httpServer.StartServer()
 }
 

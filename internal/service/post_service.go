@@ -1,31 +1,27 @@
-// internal/service/post_service.go
-
 package service
 
 import (
-	"byte-bird/internal/domain/post"
-	"byte-bird/internal/repository"
-	"context"
+  "context"
+  "byte-bird/internal/domain/post"
+  "byte-bird/internal/repository"
 )
 
 // PostService provides methods for post-related operations.
 type PostService interface {
-	CreatePost(ctx context.Context, newPost *post.Post) error
+  CreatePost(ctx context.Context, newPost *post.Post) error
+  // Add other relevant methods
 }
 
-// PostServiceImpl is an implementation of the PostService interface.
-type PostServiceImpl struct {
-	postRepo repository.PostRepository
+type postService struct {
+  postRepository repository.PostRepository
 }
 
-// NewPostServiceImpl creates a new instance of PostServiceImpl.
-func NewPostServiceImpl(postRepo repository.PostRepository) *PostServiceImpl {
-	return &PostServiceImpl{
-		postRepo: postRepo,
-	}
+// NewPostService creates a new instance of PostService.
+func NewPostService(postRepository repository.PostRepository) PostService {
+  return &postService{postRepository}
 }
 
-func (s *PostServiceImpl) CreatePost(ctx context.Context, newPost *post.Post) error {
-	// Call the CreatePost method in the repository
-	return s.postRepo.CreatePost(ctx, newPost)
+func (ps *postService) CreatePost(ctx context.Context, newPost *post.Post) error {
+  // Implement any additional logic before creating the post
+  return ps.postRepository.CreatePost(ctx, newPost)
 }
