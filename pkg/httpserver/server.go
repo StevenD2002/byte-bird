@@ -14,7 +14,7 @@ import (
 )
 
 type Claims struct {
-	UserID int    `json:"user_id"`
+	UserID string    `json:"user_id"`
 	Email  string `json:"email"`
 	jwt.StandardClaims
 }
@@ -32,6 +32,7 @@ func (s HTTPServer) StartServer() {
 	http.HandleFunc("/register", s.handleRegisterUser)
 	http.HandleFunc("/login", s.handleLoginUser)
 	http.HandleFunc("/createPost", AuthenticateMiddleware(s.handleCreatePost))
+  http.HandleFunc("/posts", AuthenticateMiddleware(s.handleGetPosts))
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -108,7 +109,7 @@ func (s HTTPServer) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context() // Retrieve the context from the request
 
 	// Extract UserID from the context
-	userID, ok := ctx.Value(userIDKey).(int)
+	userID, ok := ctx.Value(userIDKey).(string)
 	if !ok {
 		http.Error(w, "User ID not found in context", http.StatusInternalServerError)
 		return
@@ -143,6 +144,34 @@ func (s HTTPServer) handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (s HTTPServer ) handleGetPosts(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context() // Retrieve the context from the request
+  // Extract UserID from the context
+  if r.Method != http.MethodGet {
+    http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+    return
+  }
+  // start the create post process
+  posts, err := s.postService.GetPosts(ctx)
+  if err != nil {
+    http.Error(w, "Error getting posts", http.StatusInternalServerError)
+    return
+  }
+  // build the response object
+  response := map[string]interface{}{
+    "status": "success",
+    "posts":  posts,
+  }
+  jsonRespone, err := json.Marshal(response)
+  if err != nil {
+    http.Error(w, "Error marshalling response", http.StatusInternalServerError)
+    return
+  }
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonRespone)
 }
 
 // Claims structure to represent the JWT claims
