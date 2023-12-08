@@ -16,3 +16,13 @@ now, and it just seems like a good fit.
 
 
 mainly trying to get very simple MVP done to turn in for school, then will implement a follower sytems and custom feeds
+
+
+## Setup (not finished)
+
+- make sure to have go installed
+- run `go get` or `go mod tidy` to install dependencies
+- make sure to have docker installed
+- at the root of the project run `docker-compose up -d` to start the postgres database
+- cd into the `cmd/api` folder and run `go run main.go` to start the server
+- for now, you can only use curl to test the routes. Starting on client app now
