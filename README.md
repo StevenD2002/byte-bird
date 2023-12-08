@@ -26,3 +26,31 @@ mainly trying to get very simple MVP done to turn in for school, then will imple
 - at the root of the project run `docker-compose up -d` to start the postgres database
 - cd into the `cmd/api` folder and run `go run main.go` to start the server
 - for now, you can only use curl to test the routes. Starting on client app now
+
+
+## Janky migration setup
+im literally just running these sql statements in postico for now:
+
+```
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE users (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    password VARCHAR(255)
+);
+
+CREATE TABLE posts (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID NOT NULL,
+    content TEXT NOT NULL,
+    timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+
+DROP TABLE users;
+DROP TABLE posts;
+```
+
+
