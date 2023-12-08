@@ -1,5 +1,3 @@
-// internal/domain/post/post.go
-
 package post
 
 import (
@@ -12,7 +10,6 @@ type Post struct {
 	UserID    string
 	Content   string
 	Timestamp time.Time
-	// Add other relevant fields
 }
 
 // this type is used to query posts and have access to the username

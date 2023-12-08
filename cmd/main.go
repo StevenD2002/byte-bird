@@ -16,6 +16,7 @@ import (
 )
 
 const (
+  //will change this later and throw stuff in an env
 	dbConnectionString    = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
 )
 

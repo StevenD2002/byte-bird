@@ -69,5 +69,6 @@ func generateToken(userID string, email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+  // will change the secret key to something in an env later, dont want to make grading TOO hard....
 	return token.SignedString([]byte("temp-secret-key"))
 }

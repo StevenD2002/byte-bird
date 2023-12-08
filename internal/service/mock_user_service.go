@@ -5,7 +5,7 @@ package service
 import "fmt"
 
 type MockUserService struct {
-	// You can add fields or methods needed for testing purposes
+	// will do stuff here later
 }
 
 func NewMockUserService() *MockUserService {
@@ -13,7 +13,6 @@ func NewMockUserService() *MockUserService {
 }
 
 func (m *MockUserService) CreateUser(name, email string) error {
-	// Implement mock logic for CreateUser (e.g., print details for testing)
 	fmt.Printf("[Mock] Creating user: Name - %s, Email - %s\n", name, email)
 	return nil
 }
