@@ -9,8 +9,8 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(name string, email string, hashedPassword string) error
-  GetUserByEmail(ctx context.Context, email string) (string, string, string, error)
+	CreateUser(name string, email string, hashedPassword string) (string, error)
+	GetUserByEmail(ctx context.Context, email string) (string, string, string, error)
 }
 
 type userRepository struct {
@@ -21,12 +21,19 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepository{db}
 }
 
-func (ur *userRepository) CreateUser(name string, email string, hashedPassword string) error {
+func (ur *userRepository) CreateUser(name string, email string, hashedPassword string) (string, error) {
 	_, err := ur.db.Exec("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)", name, email, hashedPassword)
 	if err != nil {
-		return errors.Wrap(err, "failed to create user")
+		return " ", errors.Wrap(err, "failed to create user")
 	}
-	return nil
+	// get the user id to return to the user
+	var userID string
+	err = ur.db.QueryRow("SELECT id FROM users WHERE email = $1", email).Scan(&userID)
+	if err != nil {
+		return " ", errors.Wrap(err, "failed to get user id")
+	}
+
+	return userID, nil
 }
 
 func (ur *userRepository) AuthenticateUser(ctx context.Context, email string, password string) (string, error) {
@@ -45,15 +52,15 @@ func (ur *userRepository) AuthenticateUser(ctx context.Context, email string, pa
 
 // get the user by email and return the userID, password, and the email
 func (ur *userRepository) GetUserByEmail(ctx context.Context, email string) (string, string, string, error) {
-  var userID string
-  var hashedPassword string
-  var userEmail string
-  err := ur.db.QueryRow("SELECT id, password, email FROM users WHERE email = $1", email).Scan(&userID, &hashedPassword, &userEmail)
-  if err != nil {
-    if err == sql.ErrNoRows {
-      return "", "", "", errors.Wrap(err, "user not found")
-    }
-    return "", "", "", errors.Wrap(err, "failed to get user by email")
-  }
-  return userID, hashedPassword, userEmail, nil
+	var userID string
+	var hashedPassword string
+	var userEmail string
+	err := ur.db.QueryRow("SELECT id, password, email FROM users WHERE email = $1", email).Scan(&userID, &hashedPassword, &userEmail)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", "", "", errors.Wrap(err, "user not found")
+		}
+		return "", "", "", errors.Wrap(err, "failed to get user by email")
+	}
+	return userID, hashedPassword, userEmail, nil
 }

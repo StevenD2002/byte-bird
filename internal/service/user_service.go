@@ -5,13 +5,16 @@ import (
 	"context"
 	"fmt"
 	"time"
+  
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
+
+  "byte-bird/pkg/errors"
 )
 
 type UserService interface {
-	CreateUser(name string, email string, password string) error
+	CreateUser(name string, email string, password string) (string, error)
 	AuthenticateUser(ctx context.Context, email string, password string) (string, error)
 }
 
@@ -29,10 +32,22 @@ func NewUserService(userRepository repository.UserRepository) UserService {
 	return &userService{userRepository}
 }
 
-func (us *userService) CreateUser(name string, email string, password string) error {
+func (us *userService) CreateUser(name string, email string, password string) (string, error) {
 	hashedPassword := hashPassword(password)
 
-	return us.userRepository.CreateUser(name, email, hashedPassword)
+	// Start the create user process
+	userID, err := us.userRepository.CreateUser(name, email, hashedPassword)
+	if err != nil {
+		return "", errors.Wrap(err, "error creating user")
+	}
+
+	// generate the token
+	token, err := generateToken(userID, email)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating token")
+	}
+
+  return token, nil
 }
 
 func (us *userService) AuthenticateUser(ctx context.Context, email string, password string) (string, error) {
@@ -69,6 +84,6 @@ func generateToken(userID string, email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-  // will change the secret key to something in an env later, dont want to make grading TOO hard....
+	// will change the secret key to something in an env later, dont want to make grading TOO hard....
 	return token.SignedString([]byte("temp-secret-key"))
 }
