@@ -20,6 +20,14 @@ mainly trying to get very simple MVP done to turn in for school, then will imple
 
 ## Setup (not finished)
 
+### Step 1: Database Setup
+- install docker (for the schools jupyterhub), this is how we run our postgres database
+```
+sudo apt update
+sudo apt install -y docker.io
+```
+
+
 - make sure to have go installed
 - run `go get` or `go mod tidy` to install dependencies
 - make sure to have docker installed
