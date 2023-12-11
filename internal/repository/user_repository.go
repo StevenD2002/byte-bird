@@ -22,15 +22,16 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 func (ur *userRepository) CreateUser(name string, email string, hashedPassword string) (string, error) {
-	_, err := ur.db.Exec("INSERT INTO users (name, email, password) VALUES ($1, $2, $3)", name, email, hashedPassword)
+	_, err := ur.db.Exec("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", name, email, hashedPassword)
 	if err != nil {
-		return " ", errors.Wrap(err, "failed to create user")
+		return "", errors.Wrap(err, "failed to create user")
 	}
-	// get the user id to return to the user
+
+	// Retrieve the last inserted row ID (SQLite equivalent of SERIAL)
 	var userID string
-	err = ur.db.QueryRow("SELECT id FROM users WHERE email = $1", email).Scan(&userID)
+	err = ur.db.QueryRow("SELECT last_insert_rowid()").Scan(&userID)
 	if err != nil {
-		return " ", errors.Wrap(err, "failed to get user id")
+		return "", errors.Wrap(err, "failed to get user id")
 	}
 
 	return userID, nil
@@ -39,7 +40,7 @@ func (ur *userRepository) CreateUser(name string, email string, hashedPassword s
 func (ur *userRepository) AuthenticateUser(ctx context.Context, email string, password string) (string, error) {
 	var userID string
 	var hashedPassword string
-	err := ur.db.QueryRow("SELECT id, password FROM users WHERE email = $1", email).Scan(&userID, &hashedPassword)
+	err := ur.db.QueryRow("SELECT id, password FROM users WHERE email = ? LIMIT 1", email).Scan(&userID, &hashedPassword)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return "", errors.Wrap(err, "user not found")

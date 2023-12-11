@@ -11,31 +11,29 @@ import (
 
 	// "net/http"
 
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 	// "byte-bird/pkg/errors"
 )
 
 const (
-  //will change this later and throw stuff in an env
-	dbConnectionString    = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
+	// will change this later and throw stuff in an env
+	dbConnectionString = "file:data.db?cache=shared&mode=rwc"
 )
 
 func main() {
-	err := db.InitDB(dbConnectionString)
+	// Use the SQLite initialization function
+	sqliteDB, err := db.InitSQLiteDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-
-	userRepository := repository.NewUserRepository(db.DB)
+	userRepository := repository.NewUserRepository(sqliteDB)
 	userService := service.NewUserService(userRepository)
 
-  postRepository := repository.NewPostRepository(db.DB)
-  postService := service.NewPostService(postRepository)
-
+	postRepository := repository.NewPostRepository(sqliteDB)
+	postService := service.NewPostService(postRepository)
 
 	httpServer := httpserver.NewHTTPServer(userService, postService)
 	httpServer.StartServer()
 }
-
-
