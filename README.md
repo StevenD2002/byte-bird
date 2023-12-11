@@ -26,7 +26,11 @@ mainly trying to get very simple MVP done to turn in for school, then will imple
 sudo apt update
 sudo apt install -y docker.io
 ```
-
+- install docker-compose
+```
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
 
 - make sure to have go installed
 - run `go get` or `go mod tidy` to install dependencies
