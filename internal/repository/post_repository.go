@@ -30,7 +30,6 @@ func (r *postRepository) CreatePost(ctx context.Context, newPost *post.Post) err
 	return nil
 }
 
-
 func (r *postRepository) GetPosts(ctx context.Context) ([]*post.PostWithUser, error) {
 	rows, err := r.db.Query("SELECT posts.id, posts.user_id, users.name, posts.content, posts.timestamp FROM posts INNER JOIN users ON posts.user_id = users.id")
 	if err != nil {
