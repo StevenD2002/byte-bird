@@ -77,22 +77,21 @@ func (p *Problem) UpdateTitle(title string) {
 }
 
 func (p *Problem) UpdateDescription(description string) {
-  p.Description = description
+	p.Description = description
 }
 
 func (p *Problem) UpdateAuthor(author Author) {
-  p.Author = author
+	p.Author = author
 }
 
 func (p *Problem) UpdateSolved(solved bool) {
-  p.Solved = solved
+	p.Solved = solved
 }
 
 func (p *Problem) UpdateTaskByID(taskID string, task Task) {
-  for i, t := range p.Tasks {
-    if t.ID == taskID {
-      p.Tasks[i] = task
-    }
-  }
+	for i, t := range p.Tasks {
+		if t.ID == taskID {
+			p.Tasks[i] = task
+		}
+	}
 }
-

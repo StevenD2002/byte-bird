@@ -29,10 +29,17 @@ func NewHTTPServer(userService service.UserService, postService service.PostServ
 }
 
 func (s HTTPServer) StartServer() {
+	// server the frontend files
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("frontend"))))
 	http.HandleFunc("/register", s.handleRegisterUser)
 	http.HandleFunc("/login", s.handleLoginUser)
 	http.HandleFunc("/createPost", AuthenticateMiddleware(s.handleCreatePost))
+
 	http.HandleFunc("/posts", AuthenticateMiddleware(s.handleGetPosts))
+	// Log incoming requests
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Request received:", r.URL.Path)
+	})
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -57,7 +64,7 @@ func (s HTTPServer) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
 	// Start the create user process
 	token, err := s.userService.CreateUser(user.Name, user.Email, user.Password)
 	if err != nil {
-    fmt.Println("Error creating user at server level:", err)
+		fmt.Println("Error creating user at server level:", err)
 		http.Error(w, "Error creating user at server level", http.StatusInternalServerError)
 		return
 	}
@@ -68,15 +75,15 @@ func (s HTTPServer) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
 		"token":  token,
 	}
 
-  jsonRespone, err := json.Marshal(response)
-  if err != nil {
-    http.Error(w, "Error marshalling response", http.StatusInternalServerError)
-    return
-  }
+	jsonRespone, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, "Error marshalling response", http.StatusInternalServerError)
+		return
+	}
 
-  w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-  w.Write(jsonRespone)
+	w.Write(jsonRespone)
 }
 
 func (s HTTPServer) handleLoginUser(w http.ResponseWriter, r *http.Request) {
