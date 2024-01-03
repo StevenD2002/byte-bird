@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -28,19 +29,28 @@ func NewHTTPServer(userService service.UserService, postService service.PostServ
 	return HTTPServer{userService, postService}
 }
 
+// Middleware for logging
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Request received:", r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
+}
+
+
+// Register the middleware
 func (s HTTPServer) StartServer() {
 	// server the frontend files
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("frontend"))))
+	http.Handle("/", loggingMiddleware(http.StripPrefix("/", http.FileServer(http.Dir("frontend")))))
+
 	http.HandleFunc("/register", s.handleRegisterUser)
-	http.HandleFunc("/login", s.handleLoginUser)
+  http.HandleFunc("/login", serveLoginHTML)
+  http.HandleFunc("/api/login", s.handleLoginUser)
 	http.HandleFunc("/createPost", AuthenticateMiddleware(s.handleCreatePost))
 
 	http.HandleFunc("/posts", AuthenticateMiddleware(s.handleGetPosts))
 	// Log incoming requests
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Request received:", r.URL.Path)
-	})
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8079", nil)
 }
 
 func (s HTTPServer) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -69,21 +79,13 @@ func (s HTTPServer) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// build the response object
-	response := map[string]interface{}{
-		"status": "success",
-		"token":  token,
-	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		HttpOnly: true,
+	})
 
-	jsonRespone, err := json.Marshal(response)
-	if err != nil {
-		http.Error(w, "Error marshalling response", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(jsonRespone)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (s HTTPServer) handleLoginUser(w http.ResponseWriter, r *http.Request) {
@@ -124,6 +126,11 @@ func (s HTTPServer) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonRespone)
+}
+
+func serveLoginHTML(w http.ResponseWriter, r *http.Request) {
+	filePath := filepath.Join("frontend", "login.html")
+	http.ServeFile(w, r, filePath)
 }
 
 // create post with the body and users name
@@ -200,42 +207,49 @@ func (s HTTPServer) handleGetPosts(w http.ResponseWriter, r *http.Request) {
 // Key used to store user ID in the context
 const userIDKey = "user_id"
 
-// AuthenticateMiddleware is a middleware for extracting and validating JWT tokens
 func AuthenticateMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Extract the token from the Authorization header
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+		// Check if the request accepts JSON
+		if strings.Contains(r.Header.Get("Accept"), "application/json") {
+			// JSON request, perform the usual token validation
+
+			// Extract the token from the Authorization header
+			authHeader := r.Header.Get("Authorization")
+			if authHeader == "" {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// Remove the "Bearer " prefix
+			tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
+
+			// Parse the token with custom claims
+			token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+				return []byte("temp-secret-key"), nil // Replace with your actual secret key
+			})
+
+			if err != nil || !token.Valid {
+				fmt.Println("Token validation failed:", err)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// Extract claims from the token
+			claims, ok := token.Claims.(*Claims)
+			if !ok {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// Populate the context with the user ID from the token
+			ctx := context.WithValue(r.Context(), userIDKey, claims.UserID)
+			r = r.WithContext(ctx)
+
+			// Call the next handler
+			next.ServeHTTP(w, r)
+		} else {
+			// HTML request, redirect to login page
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
-
-		// Remove the "Bearer " prefix
-		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
-
-		// Parse the token with custom claims
-		token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte("temp-secret-key"), nil // Replace with your actual secret key
-		})
-
-		if err != nil || !token.Valid {
-			fmt.Println("Token validation failed:", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		// Extract claims from the token
-		claims, ok := token.Claims.(*Claims)
-		if !ok {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		// Populate the context with the user ID from the token
-		ctx := context.WithValue(r.Context(), userIDKey, claims.UserID)
-		r = r.WithContext(ctx)
-
-		// Call the next handler
-		next.ServeHTTP(w, r)
 	}
 }
