@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -28,19 +29,33 @@ func NewHTTPServer(userService service.UserService, postService service.PostServ
 	return HTTPServer{userService, postService}
 }
 
-func (s HTTPServer) StartServer() {
-	// server the frontend files
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("frontend"))))
-	http.HandleFunc("/register", s.handleRegisterUser)
-	http.HandleFunc("/login", s.handleLoginUser)
-	http.HandleFunc("/createPost", AuthenticateMiddleware(s.handleCreatePost))
-
-	http.HandleFunc("/posts", AuthenticateMiddleware(s.handleGetPosts))
-	// Log incoming requests
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+// Middleware for logging
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Request received:", r.URL.Path)
+		next.ServeHTTP(w, r)
 	})
+}
+
+func (s HTTPServer) StartServer() {
+	http.Handle("/", loggingMiddleware(http.StripPrefix("/", http.FileServer(http.Dir("frontend")))))
+	// serve the register page
+	http.Handle("/register", loggingMiddleware(serveRegisterPage()))
+
+	http.HandleFunc("/api/register", s.handleRegisterUser)
+	http.HandleFunc("/api/login", s.handleLoginUser)
+	http.HandleFunc("/api/createPost", AuthenticateMiddleware(s.handleCreatePost))
+	http.HandleFunc("/api/posts", AuthenticateMiddleware(s.handleGetPosts))
+	// Log incoming requests
 	http.ListenAndServe(":8080", nil)
+}
+
+func serveRegisterPage() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Serving register page")
+		filePath := filepath.Join("frontend", "register.html")
+		http.ServeFile(w, r, filePath)
+	})
 }
 
 func (s HTTPServer) handleRegisterUser(w http.ResponseWriter, r *http.Request) {
