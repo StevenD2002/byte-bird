@@ -7,3 +7,4 @@ do that is to build it!
 
 Gonna add more here soon
 
+[trello board](https://trello.com/b/kt4rJOjn/dev)
