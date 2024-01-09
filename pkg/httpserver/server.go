@@ -46,8 +46,7 @@ func (s HTTPServer) StartServer() {
 	http.HandleFunc("/api/login", s.handleLoginUser)
 	http.HandleFunc("/api/createPost", AuthenticateMiddleware(s.handleCreatePost))
 	http.HandleFunc("/api/posts", AuthenticateMiddleware(s.handleGetPosts))
-	// Log incoming requests
-	http.ListenAndServe(":8080", nil)
+  http.ListenAndServeTLS(":443", "cert.pem", "key.pem", nil)
 }
 
 func serveRegisterPage() http.Handler {
