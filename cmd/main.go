@@ -3,39 +3,29 @@ package main
 import (
 	// "database/sql"
 	// "fmt"
-	"byte-bird/internal/db"
-	"byte-bird/internal/repository"
-	"byte-bird/internal/service"
-	"byte-bird/pkg/httpserver"
-	"log"
+	// "byte-bird/internal/repository"
+	// "byte-bird/internal/service"
 
 	// "net/http"
 
+	"fmt"
+	"net/http"
+
+	"github.com/a-h/templ"
 	_ "github.com/lib/pq"
 	// "byte-bird/pkg/errors"
 )
 
 const (
-  //will change this later and throw stuff in an env
-	dbConnectionString    = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
+	// will change this later and throw stuff in an env
+	dbConnectionString = "host=localhost port=5432 dbname=mydatabase user=postgres password=password sslmode=disable"
 )
 
 func main() {
-	err := db.InitDB(dbConnectionString)
-	if err != nil {
-		log.Fatal(err)
-	}
+	component := hello("John")
 
+	http.Handle("/", templ.Handler(component))
 
-	userRepository := repository.NewUserRepository(db.DB)
-	userService := service.NewUserService(userRepository)
-
-  postRepository := repository.NewPostRepository(db.DB)
-  postService := service.NewPostService(postRepository)
-
-
-	httpServer := httpserver.NewHTTPServer(userService, postService)
-	httpServer.StartServer()
+	fmt.Println("Listening on :3000")
+	http.ListenAndServe(":3000", nil)
 }
-
-
