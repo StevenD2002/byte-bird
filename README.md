@@ -1,9 +1,7 @@
 # ReadME
 
-hey! thanks for checking this out. Sorry that it is still wip, I am trying to
-learn how to build Domain Driven Design style backend. I figured the best way to
-do that is to build it!
-
+hey! thanks for checking this out. Sorry this is still very much WIP. Trying to
+test out a cool new tech stack using go + htmx + templ and postgres.
 
 Gonna add more here soon
 
